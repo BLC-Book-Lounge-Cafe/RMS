@@ -1,0 +1,10 @@
+.env
+.env.example
+.env.test
+docker-compose.yml
+*.md
+!README*.md
+.git
+.cache
+/test
+.docker/workspace/**

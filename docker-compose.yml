@@ -1,0 +1,33 @@
+volumes:
+  postgres_data:
+
+services:
+  workspace:
+    build:
+      context: .docker/workspace
+      args:
+        PUID: ${PUID:-1000}
+        PGID: ${PGID:-1000}
+    command: sleep infinity
+    init: true
+    volumes:
+      - .:/workspace:z
+    ports:
+      - '3000:3000'
+      - '9000:9000'
+    restart: unless-stopped
+    working_dir: /workspace
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rms
+      POSTGRES_USER: rms
+      POSTGRES_PASSWORD: rms
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data

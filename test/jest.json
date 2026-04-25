@@ -1,0 +1,28 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": "./..",
+  "testEnvironment": "node",
+  "testRegex": ".(e2e-)?spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "setupFiles": [
+    "<rootDir>/test/setup-tests.ts"
+  ],
+  "coveragePathIgnorePatterns": [
+    ".*\\.e2e-spec\\.ts$",
+    ".*\\.spec\\.ts$",
+    "<rootDir>/test/*"
+  ],
+  "moduleNameMapper": {
+    "^@clients/(.*)$": "<rootDir>/src/infrastructure/clients/$1",
+    "^@config/(.*)$": "<rootDir>/src/infrastructure/config/$1",
+    "^@guards/(.*)$": "<rootDir>/src/guards/$1",
+    "^@test/(.*)$": "<rootDir>/test/$1",
+    "^@/(.*)$": "<rootDir>/src/$1"
+  }
+}
