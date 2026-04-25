@@ -77,6 +77,9 @@ jobs:
           username: ${{ secrets.VDS_USER }}
           key: ${{ secrets.VDS_SSH_KEY }}
           script: |
+            set -e
             cd ${{ secrets.VDS_APP_DIR }}
             git pull origin main
-            docker compose up -d --build
+            docker compose -f docker-compose.prod.yml build app
+            docker compose -f docker-compose.prod.yml up -d --no-deps app
+            docker image prune -f

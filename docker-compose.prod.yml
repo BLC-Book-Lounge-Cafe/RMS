@@ -1,0 +1,30 @@
+volumes:
+  postgres_data:
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: .docker/build/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - '3000:3000'
+      - '9000:9000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
