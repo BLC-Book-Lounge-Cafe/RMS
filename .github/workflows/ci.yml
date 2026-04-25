@@ -63,3 +63,20 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
+
+  deploy:
+    name: Deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VDS_HOST }}
+          username: ${{ secrets.VDS_USER }}
+          key: ${{ secrets.VDS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VDS_APP_DIR }}
+            git pull origin main
+            docker compose up -d --build
