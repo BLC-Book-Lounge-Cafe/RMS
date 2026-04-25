@@ -1,2 +1,2 @@
-# MIS
-MIS — Messenger Integration Service (Основной сервис для интеграции с мессенджером)
+# RMS
+RMS — Reservation Management Service (Основной backend сервис для управления бронированием)
