@@ -1,22 +1,23 @@
 FROM node:24-alpine
 
-WORKDIR /app
-
 RUN set -ex \
     && npm install -g pnpm@10
 
-COPY ./package.json ./pnpm-lock.yaml ./
-COPY ./prisma/ ./prisma/
+USER node
+
+WORKDIR /app
+
+COPY --chown=node:node ./package.json ./pnpm-lock.yaml ./
+COPY --chown=node:node ./prisma/ ./prisma/
 
 RUN pnpm install
 
-COPY . .
+COPY --chown=node:node . .
 
 RUN set -ex \
     && pnpm run postinstall \
     && pnpm run build
 
-USER node
 EXPOSE 3000 9000
 
 CMD [ "pnpm", "run", "start:prod" ]
