@@ -2,6 +2,7 @@
 .env.example
 .env.test
 docker-compose.yml
+docker-compose.prod.yml
 *.md
 !README*.md
 .git
