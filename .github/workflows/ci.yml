@@ -78,8 +78,9 @@ jobs:
           key: ${{ secrets.VDS_SSH_KEY }}
           script: |
             set -e
+            git clone https://github.com/BLC-Book-Lounge-Cafe/RMS.git ${{ secrets.VDS_APP_DIR }} | true
             cd ${{ secrets.VDS_APP_DIR }}
-            git clone https://github.com/BLC-Book-Lounge-Cafe/RMS.git ${{ secrets.VDS_APP_DIR }} | true cd ${{ secrets.VDS_APP_DIR }} git pull origin main
+            git pull origin main
             docker compose -f docker-compose.prod.yml build app
             docker compose -f docker-compose.prod.yml up -d --no-deps app
             docker image prune -f
