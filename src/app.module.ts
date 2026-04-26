@@ -1,8 +1,24 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { AuthGuard } from '@guards/auth.guard';
 import { DatabaseRmsModule } from '@clients/database/database-rms.module';
+import { LoggerModule } from 'nestjs-pino';
+import { OpenTelemetryModule } from 'nestjs-otel';
+import pretty from 'pino-pretty';
+import ecsFormat from '@elastic/ecs-pino-format';
+import { LoggerMiddleware } from './middleware/logger.middleware';
+
+const OpenTelemetryModuleConfig = OpenTelemetryModule.forRoot({
+  metrics: {
+    hostMetrics: true,
+    apiMetrics: {
+      enable: true,
+      ignoreRoutes: ['/swaggerui'],
+      ignoreUndefinedRoutes: true,
+    },
+  },
+});
 
 @Module({
   imports: [
@@ -10,6 +26,27 @@ import { DatabaseRmsModule } from '@clients/database/database-rms.module';
       isGlobal: true,
     }),
     DatabaseRmsModule,
+    OpenTelemetryModuleConfig,
+    LoggerModule.forRoot({
+      pinoHttp:
+        process.env.NODE_ENV !== 'production'
+          ? [
+              {
+                autoLogging: false,
+                serializers: {
+                  req() {},
+                },
+              },
+              pretty(),
+            ]
+          : {
+              autoLogging: false,
+              serializers: {
+                req() {},
+              },
+              ...ecsFormat(),
+            },
+    }),
   ],
   providers: [
     AuthGuard,
@@ -19,4 +56,8 @@ import { DatabaseRmsModule } from '@clients/database/database-rms.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
