@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient as PrismaRmsClient } from '@prisma-rms/client';
+import { prismaRmsProducer } from '@telemetry';
 
 @Injectable()
 export class DatabaseRmsClient implements OnModuleInit {
@@ -21,6 +22,7 @@ export class DatabaseRmsClient implements OnModuleInit {
     this.client = new PrismaRmsClient({ adapter });
 
     await this.client.$connect();
+    prismaRmsProducer.setPrisma('rms', this.client);
     this.logger.log('Connected to RMS PostgreSQL database');
   }
 
