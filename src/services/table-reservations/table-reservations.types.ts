@@ -1,0 +1,19 @@
+export interface FindTableReservationsFilter {
+  page_number: number;
+  page_size: number;
+}
+
+export interface TableReservationRecord {
+  id: number;
+  table_id: number;
+  name: string;
+  phone: string;
+  start_at: Date;
+  end_at: Date;
+  created_at: Date;
+}
+
+export interface FindTableReservationsResult {
+  items: TableReservationRecord[];
+  total_entries: number;
+}

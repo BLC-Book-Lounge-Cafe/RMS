@@ -1,11 +1,14 @@
 import {
+  applyDecorators,
   CanActivate,
   ExecutionContext,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { ApiResponse } from '@nestjs/swagger';
 import { Unauthorized } from './guards.errors';
 
 @Injectable()
@@ -32,4 +35,21 @@ export class AuthGuard implements CanActivate {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
+}
+
+export function ApiUnauthorizedResponse() {
+  return applyDecorators(
+    ApiResponse({
+      status: HttpStatus.UNAUTHORIZED,
+      content: {
+        'application/json': {
+          examples: {
+            [Unauthorized.message]: {
+              value: { error: Unauthorized },
+            },
+          },
+        },
+      },
+    }),
+  );
 }
