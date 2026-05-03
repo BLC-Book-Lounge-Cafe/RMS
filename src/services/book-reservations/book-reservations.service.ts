@@ -7,7 +7,7 @@ import {
   FindBookReservationsResult,
 } from './book-reservations.types';
 import { BookAlreadyReserved } from './book-reservations.errors';
-import { PastDateNotAllowed } from '@services/common/reservations.errors';
+import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
 
 @Injectable()
 export class BookReservationsService {

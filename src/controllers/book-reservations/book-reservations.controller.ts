@@ -11,7 +11,7 @@ import {
 import { ApiUnauthorizedResponse } from '@guards/auth.guard';
 import { BookReservationsService } from '@services/book-reservations/book-reservations.service';
 import { BookAlreadyReserved } from '@services/book-reservations/book-reservations.errors';
-import { PastDateNotAllowed } from '@services/common/reservations.errors';
+import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
 import {
   BookReservationModel,
   BookReservationsQueryDto,
@@ -35,6 +35,16 @@ export class BookReservationsController {
     type: BookReservationsResponse,
     description: 'Список бронирований книг',
   })
+  @ApiBadRequestResponse({
+    description: 'Невалидные query-параметры',
+    schema: {
+      example: {
+        message: ['Неверный формат reserved_at, ожидается YYYY-MM-DD'],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
   async getReservations(
     @Query() query: BookReservationsQueryDto,
   ): Promise<BookReservationsResponse> {
@@ -42,6 +52,8 @@ export class BookReservationsController {
     const page_size = query.page_size ?? 20;
 
     const { items, total_entries } = await this.service.findAll({
+      book_id: query.book_id,
+      reserved_at: query.reserved_at ? new Date(query.reserved_at) : undefined,
       page_number,
       page_size,
     });
@@ -66,7 +78,9 @@ export class BookReservationsController {
   @HttpCode(201)
   @ApiOperation({
     summary: 'Создание бронирования книги',
-    description: 'Создаёт новое бронирование книги на указанную дату',
+    description:
+      'Создаёт новое бронирование книги на указанную дату. Если книга уже забронирована ' +
+      'на эту дату (по book_id + reserved_at), возвращается 409 Conflict.',
   })
   @ApiCreatedResponse({
     type: BookReservationModel,
@@ -77,9 +91,7 @@ export class BookReservationsController {
     content: {
       'application/json': {
         examples: {
-          [PastDateNotAllowed.message]: {
-            value: { error: PastDateNotAllowed },
-          },
+          [PastDateNotAllowed.message]: { value: { error: PastDateNotAllowed } },
         },
       },
     },
@@ -89,9 +101,7 @@ export class BookReservationsController {
     content: {
       'application/json': {
         examples: {
-          [BookAlreadyReserved.message]: {
-            value: { error: BookAlreadyReserved },
-          },
+          [BookAlreadyReserved.message]: { value: { error: BookAlreadyReserved } },
         },
       },
     },

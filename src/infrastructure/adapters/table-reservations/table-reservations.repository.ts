@@ -16,10 +16,18 @@ export class TableReservationsRepository implements ITableReservationsRepository
   async findAll(
     filter: FindTableReservationsFilter,
   ): Promise<FindTableReservationsResult> {
+    const where = {
+      ...(filter.table_id !== undefined && { table_id: filter.table_id }),
+      ...(filter.active_at !== undefined && {
+        start_at: { lte: filter.active_at },
+        end_at: { gt: filter.active_at },
+      }),
+    };
     const skip = (filter.page_number - 1) * filter.page_size;
 
     const [items, total_entries] = await Promise.all([
       this.db.getClient().table_reservation.findMany({
+        where,
         skip,
         take: filter.page_size,
         orderBy: { created_at: 'asc' },
@@ -33,7 +41,7 @@ export class TableReservationsRepository implements ITableReservationsRepository
           created_at: true,
         },
       }),
-      this.db.getClient().table_reservation.count(),
+      this.db.getClient().table_reservation.count({ where }),
     ]);
 
     return { items, total_entries };

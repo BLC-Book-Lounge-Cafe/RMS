@@ -1,4 +1,6 @@
 export interface FindBookReservationsFilter {
+  book_id?: number;
+  reserved_at?: Date;
   page_number: number;
   page_size: number;
 }

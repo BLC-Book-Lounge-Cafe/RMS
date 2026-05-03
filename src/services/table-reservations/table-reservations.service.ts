@@ -7,7 +7,7 @@ import {
   TableReservationRecord,
 } from './table-reservations.types';
 import { TableMinDurationViolation, TableSlotConflict } from './table-reservations.errors';
-import { PastDateNotAllowed } from '@services/common/reservations.errors';
+import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
 
 @Injectable()
 export class TableReservationsService {

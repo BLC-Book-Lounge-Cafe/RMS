@@ -13,6 +13,29 @@ import { Type } from 'class-transformer';
 
 export class BookReservationsQueryDto {
   @ApiPropertyOptional({
+    description: 'Фильтр по ID книги',
+    example: 3,
+    minimum: 1,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  book_id?: number;
+
+  @ApiPropertyOptional({
+    description: 'Фильтр по дате бронирования (YYYY-MM-DD)',
+    example: '2026-05-15',
+    format: 'date',
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'Неверный формат reserved_at, ожидается YYYY-MM-DD',
+  })
+  reserved_at?: string;
+
+  @ApiPropertyOptional({
     description: 'Номер страницы',
     default: 1,
     minimum: 1,
@@ -92,7 +115,7 @@ export class CreateBookReservationDto {
   })
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'reserved_at must be a date in format YYYY-MM-DD',
+    message: 'Неверный формат reserved_at, ожидается YYYY-MM-DD',
   })
   reserved_at: string;
 }

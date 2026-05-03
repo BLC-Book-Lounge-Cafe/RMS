@@ -16,8 +16,18 @@ export class QuickReservationsRepository implements IQuickReservationsRepository
   async findAll(
     filter: FindQuickReservationsFilter,
   ): Promise<FindQuickReservationsResult> {
+    let createdRange: { gte: Date; lt: Date } | undefined;
+    if (filter.created_date !== undefined) {
+      const dayStart = new Date(filter.created_date);
+      dayStart.setUTCHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setUTCDate(dayEnd.getUTCDate() + 1);
+      createdRange = { gte: dayStart, lt: dayEnd };
+    }
+
     const where = {
       ...(filter.status && { status: filter.status }),
+      ...(createdRange !== undefined && { created_at: createdRange }),
     };
     const skip = (filter.page_number - 1) * filter.page_size;
 
