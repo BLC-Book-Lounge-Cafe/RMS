@@ -2,8 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseRmsClient } from '@clients/database/database-rms.client';
 import { IQuickReservationsRepository } from './quick-reservations.repository.interface';
 import {
+  CreateQuickReservationInput,
   FindQuickReservationsFilter,
   FindQuickReservationsResult,
+  QuickReservationRecord,
+  UpdateQuickReservationStatusInput,
 } from '@services/quick-reservations/quick-reservations.types';
 
 @Injectable()
@@ -36,5 +39,48 @@ export class QuickReservationsRepository implements IQuickReservationsRepository
     ]);
 
     return { items, total_entries };
+  }
+
+  findById(id: number): Promise<QuickReservationRecord | null> {
+    return this.db.getClient().quick_reservation.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        name: true,
+        phone: true,
+        created_at: true,
+      },
+    });
+  }
+
+  create(input: CreateQuickReservationInput): Promise<QuickReservationRecord> {
+    return this.db.getClient().quick_reservation.create({
+      data: {
+        name: input.name,
+        phone: input.phone,
+      },
+      select: {
+        id: true,
+        status: true,
+        name: true,
+        phone: true,
+        created_at: true,
+      },
+    });
+  }
+
+  updateStatus(input: UpdateQuickReservationStatusInput): Promise<QuickReservationRecord> {
+    return this.db.getClient().quick_reservation.update({
+      where: { id: input.id },
+      data: { status: input.status },
+      select: {
+        id: true,
+        status: true,
+        name: true,
+        phone: true,
+        created_at: true,
+      },
+    });
   }
 }

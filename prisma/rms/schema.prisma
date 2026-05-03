@@ -14,12 +14,14 @@ enum ReservationStatus {
 }
 
 model book_reservation {
-  id         Int      @id @default(autoincrement())
-  book_id    Int
-  name       String   @db.VarChar(255)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  book_id     Int
+  name        String   @db.VarChar(255)
+  reserved_at DateTime @db.Date
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
+  @@unique([book_id, reserved_at])
   @@index([book_id])
 }
 
