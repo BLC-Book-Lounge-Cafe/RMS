@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum ReservationStatusDto {
@@ -54,9 +64,6 @@ export class QuickReservationModel {
 
   @ApiProperty({ example: '+79001234567' })
   phone: string;
-
-  @ApiProperty({ format: 'date-time' })
-  created_at: Date;
 }
 
 export class QuickReservationsResponse {
@@ -74,4 +81,33 @@ export class QuickReservationsResponse {
 
   @ApiProperty({ description: 'Всего страниц', example: 3 })
   total_pages: number;
+}
+
+export class CreateQuickReservationDto {
+  @ApiProperty({ example: 'Иван', maxLength: 255 })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  name: string;
+
+  @ApiProperty({ example: '+79001234567' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(20)
+  @Matches(/^\+7\d{10}$/, { message: 'phone must be in format +7XXXXXXXXXX' })
+  phone: string;
+}
+
+export enum UpdateReservationStatusDto {
+  confirmed = 'confirmed',
+  cancelled = 'cancelled',
+}
+
+export class UpdateQuickReservationDto {
+  @ApiProperty({
+    description: 'Новый статус заявки',
+    enum: UpdateReservationStatusDto,
+  })
+  @IsEnum(UpdateReservationStatusDto)
+  status: UpdateReservationStatusDto;
 }

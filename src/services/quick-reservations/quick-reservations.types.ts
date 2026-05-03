@@ -18,3 +18,13 @@ export interface FindQuickReservationsResult {
   items: QuickReservationRecord[];
   total_entries: number;
 }
+
+export interface CreateQuickReservationInput {
+  name: string;
+  phone: string;
+}
+
+export interface UpdateQuickReservationStatusInput {
+  id: number;
+  status: Exclude<ReservationStatus, 'pending'>;
+}

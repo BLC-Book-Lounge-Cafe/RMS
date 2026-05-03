@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class BookReservationsQueryDto {
@@ -38,8 +47,12 @@ export class BookReservationModel {
   @ApiProperty({ example: 'Иван' })
   name: string;
 
-  @ApiProperty({ format: 'date-time' })
-  created_at: Date;
+  @ApiProperty({
+    description: 'Дата бронирования (YYYY-MM-DD)',
+    format: 'date',
+    example: '2026-05-15',
+  })
+  reserved_at: Date;
 }
 
 export class BookReservationsResponse {
@@ -57,4 +70,29 @@ export class BookReservationsResponse {
 
   @ApiProperty({ description: 'Всего страниц', example: 3 })
   total_pages: number;
+}
+
+export class CreateBookReservationDto {
+  @ApiProperty({ description: 'ID книги', example: 3 })
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  book_id: number;
+
+  @ApiProperty({ example: 'Иван', maxLength: 255 })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  name: string;
+
+  @ApiProperty({
+    description: 'Дата бронирования в формате YYYY-MM-DD',
+    example: '2026-05-15',
+    format: 'date',
+  })
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'reserved_at must be a date in format YYYY-MM-DD',
+  })
+  reserved_at: string;
 }

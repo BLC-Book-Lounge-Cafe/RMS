@@ -17,3 +17,17 @@ export interface FindTableReservationsResult {
   items: TableReservationRecord[];
   total_entries: number;
 }
+
+export interface CreateTableReservationInput {
+  table_id: number;
+  name: string;
+  phone: string;
+  start_at: Date;
+  end_at: Date;
+}
+
+export interface FindOverlappingTableReservationFilter {
+  table_id: number;
+  start_at: Date;
+  end_at: Date;
+}
