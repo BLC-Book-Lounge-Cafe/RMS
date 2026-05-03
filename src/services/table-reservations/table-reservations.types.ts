@@ -1,4 +1,6 @@
 export interface FindTableReservationsFilter {
+  table_id?: number;
+  active_at?: Date;
   page_number: number;
   page_size: number;
 }

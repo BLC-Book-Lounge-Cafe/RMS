@@ -16,10 +16,15 @@ export class BookReservationsRepository implements IBookReservationsRepository {
   async findAll(
     filter: FindBookReservationsFilter,
   ): Promise<FindBookReservationsResult> {
+    const where = {
+      ...(filter.book_id !== undefined && { book_id: filter.book_id }),
+      ...(filter.reserved_at !== undefined && { reserved_at: filter.reserved_at }),
+    };
     const skip = (filter.page_number - 1) * filter.page_size;
 
     const [items, total_entries] = await Promise.all([
       this.db.getClient().book_reservation.findMany({
+        where,
         skip,
         take: filter.page_size,
         orderBy: { created_at: 'desc' },
@@ -31,7 +36,7 @@ export class BookReservationsRepository implements IBookReservationsRepository {
           created_at: true,
         },
       }),
-      this.db.getClient().book_reservation.count(),
+      this.db.getClient().book_reservation.count({ where }),
     ]);
 
     return { items, total_entries };

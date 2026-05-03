@@ -10,6 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
@@ -51,6 +52,16 @@ export class QuickReservationsController {
     type: QuickReservationsResponse,
     description: 'Список заявок на быстрое бронирование',
   })
+  @ApiBadRequestResponse({
+    description: 'Невалидные query-параметры',
+    schema: {
+      example: {
+        message: ['Неверный формат created_date, ожидается YYYY-MM-DD'],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
   async getReservations(
     @Query() query: ReservationsQueryDto,
   ): Promise<QuickReservationsResponse> {
@@ -59,6 +70,7 @@ export class QuickReservationsController {
 
     const { items, total_entries } = await this.service.findAll({
       status: query.status,
+      created_date: query.created_date ? new Date(query.created_date) : undefined,
       page_number,
       page_size,
     });
@@ -110,7 +122,9 @@ export class QuickReservationsController {
   @Put(':id/status')
   @ApiOperation({
     summary: 'Изменение статуса заявки на быстрое бронирование',
-    description: 'Переводит заявку из статуса pending',
+    description:
+      'Переводит заявку из статуса pending в confirmed или cancelled. ' +
+      'Если заявка уже обработана (статус не pending), возвращается 409 Conflict.',
   })
   @ApiOkResponse({
     type: QuickReservationModel,

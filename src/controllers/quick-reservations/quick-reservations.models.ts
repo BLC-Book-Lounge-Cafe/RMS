@@ -28,6 +28,19 @@ export class ReservationsQueryDto {
   status?: ReservationStatusDto;
 
   @ApiPropertyOptional({
+    description:
+      'Фильтр по дате создания заявки (YYYY-MM-DD) — возвращает заявки, созданные в указанный день',
+    example: '2026-05-03',
+    format: 'date',
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'Неверный формат created_date, ожидается YYYY-MM-DD',
+  })
+  created_date?: string;
+
+  @ApiPropertyOptional({
     description: 'Номер страницы',
     default: 1,
     minimum: 1,
@@ -94,7 +107,7 @@ export class CreateQuickReservationDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
-  @Matches(/^\+7\d{10}$/, { message: 'phone must be in format +7XXXXXXXXXX' })
+  @Matches(/^\+7\d{10}$/, { message: 'Телефон должен быть в формате +7XXXXXXXXXX' })
   phone: string;
 }
 

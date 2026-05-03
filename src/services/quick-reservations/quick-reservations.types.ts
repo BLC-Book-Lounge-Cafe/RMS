@@ -2,6 +2,7 @@ export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled';
 
 export interface FindQuickReservationsFilter {
   status?: ReservationStatus;
+  created_date?: Date;
   page_number: number;
   page_size: number;
 }

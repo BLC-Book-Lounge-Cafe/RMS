@@ -14,7 +14,7 @@ import {
   TableMinDurationViolation,
   TableSlotConflict,
 } from '@services/table-reservations/table-reservations.errors';
-import { PastDateNotAllowed } from '@services/common/reservations.errors';
+import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
 import {
   CreateTableReservationDto,
   TableReservationModel,
@@ -38,6 +38,16 @@ export class TableReservationsController {
     type: TableReservationsResponse,
     description: 'Список бронирований столов',
   })
+  @ApiBadRequestResponse({
+    description: 'Невалидные query-параметры',
+    schema: {
+      example: {
+        message: ['Неверный формат active_at, ожидается ISO-8601'],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
   async getReservations(
     @Query() query: TableReservationsQueryDto,
   ): Promise<TableReservationsResponse> {
@@ -45,6 +55,8 @@ export class TableReservationsController {
     const page_size = query.page_size ?? 20;
 
     const { items, total_entries } = await this.service.findAll({
+      table_id: query.table_id,
+      active_at: query.active_at ? new Date(query.active_at) : undefined,
       page_number,
       page_size,
     });
@@ -84,9 +96,7 @@ export class TableReservationsController {
     content: {
       'application/json': {
         examples: {
-          [PastDateNotAllowed.message]: {
-            value: { error: PastDateNotAllowed },
-          },
+          [PastDateNotAllowed.message]: { value: { error: PastDateNotAllowed } },
         },
       },
     },
