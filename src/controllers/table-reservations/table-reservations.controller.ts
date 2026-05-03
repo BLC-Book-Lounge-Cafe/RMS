@@ -1,6 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -8,6 +11,12 @@ import {
 import { ApiUnauthorizedResponse } from '@guards/auth.guard';
 import { TableReservationsService } from '@services/table-reservations/table-reservations.service';
 import {
+  TableMinDurationViolation,
+  TableSlotConflict,
+} from '@services/table-reservations/table-reservations.errors';
+import { PastDateNotAllowed } from '@services/common/reservations.errors';
+import {
+  CreateTableReservationDto,
   TableReservationModel,
   TableReservationsQueryDto,
   TableReservationsResponse,
@@ -49,13 +58,74 @@ export class TableReservationsController {
           phone: item.phone,
           start_at: item.start_at,
           end_at: item.end_at,
-          created_at: item.created_at,
         }),
       ),
       page_number,
       page_size,
       total_entries,
       total_pages: Math.ceil(total_entries / page_size),
+    };
+  }
+
+  @Post()
+  @HttpCode(201)
+  @ApiOperation({
+    summary: 'Создание бронирования стола',
+    description:
+      'Создаёт новое бронирование стола. Если на указанный стол уже есть бронь, ' +
+      'пересекающаяся по времени со start_at/end_at, возвращается 409 Conflict.',
+  })
+  @ApiCreatedResponse({
+    type: TableReservationModel,
+    description: 'Созданное бронирование стола',
+  })
+  @ApiBadRequestResponse({
+    description: 'Бронирование на прошедшую дату невозможно',
+    content: {
+      'application/json': {
+        examples: {
+          [PastDateNotAllowed.message]: {
+            value: { error: PastDateNotAllowed },
+          },
+        },
+      },
+    },
+  })
+  @ApiConflictResponse({
+    description: 'Конфликт бронирования стола',
+    content: {
+      'application/json': {
+        examples: {
+          [TableSlotConflict.message]: {
+            summary: TableSlotConflict.message,
+            value: { error: TableSlotConflict },
+          },
+          [TableMinDurationViolation.message]: {
+            summary: TableMinDurationViolation.message,
+            value: { error: TableMinDurationViolation },
+          },
+        },
+      },
+    },
+  })
+  async create(
+    @Body() dto: CreateTableReservationDto,
+  ): Promise<TableReservationModel> {
+    const item = await this.service.create({
+      table_id: dto.table_id,
+      name: dto.name,
+      phone: dto.phone,
+      start_at: new Date(dto.start_at),
+      end_at: new Date(dto.end_at),
+    });
+
+    return {
+      id: item.id,
+      table_id: item.table_id,
+      name: item.name,
+      phone: item.phone,
+      start_at: item.start_at,
+      end_at: item.end_at,
     };
   }
 }

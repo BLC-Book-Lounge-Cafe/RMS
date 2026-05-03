@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+  IsInt,
+  IsISO8601,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class TableReservationsQueryDto {
@@ -46,9 +56,6 @@ export class TableReservationModel {
 
   @ApiProperty({ format: 'date-time', description: 'Конец брони' })
   end_at: Date;
-
-  @ApiProperty({ format: 'date-time' })
-  created_at: Date;
 }
 
 export class TableReservationsResponse {
@@ -66,4 +73,32 @@ export class TableReservationsResponse {
 
   @ApiProperty({ description: 'Всего страниц', example: 3 })
   total_pages: number;
+}
+
+export class CreateTableReservationDto {
+  @ApiProperty({ description: 'ID стола', example: 2 })
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  table_id: number;
+
+  @ApiProperty({ example: 'Мария', maxLength: 255 })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  name: string;
+
+  @ApiProperty({ example: '+79001234567' })
+  @IsString()
+  @MaxLength(20)
+  @Matches(/^\+7\d{10}$/, { message: 'phone must be in format +7XXXXXXXXXX' })
+  phone: string;
+
+  @ApiProperty({ format: 'date-time', description: 'Начало брони (ISO-8601)' })
+  @IsISO8601()
+  start_at: string;
+
+  @ApiProperty({ format: 'date-time', description: 'Конец брони (ISO-8601). Должен быть позже start_at' })
+  @IsISO8601()
+  end_at: string;
 }
