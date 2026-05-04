@@ -4,8 +4,10 @@ import { ITableReservationsRepository } from './table-reservations.repository.in
 import {
   CreateTableReservationInput,
   FindOverlappingTableReservationFilter,
+  FindReservationsInRangeFilter,
   FindTableReservationsFilter,
   FindTableReservationsResult,
+  ReservationRangeRecord,
   TableReservationRecord,
 } from '@services/table-reservations/table-reservations.types';
 
@@ -18,10 +20,7 @@ export class TableReservationsRepository implements ITableReservationsRepository
   ): Promise<FindTableReservationsResult> {
     const where = {
       ...(filter.table_id !== undefined && { table_id: filter.table_id }),
-      ...(filter.active_at !== undefined && {
-        start_at: { lte: filter.active_at },
-        end_at: { gt: filter.active_at },
-      }),
+      ...(filter.active_at !== undefined && this.buildDayOverlap(filter.active_at)),
     };
     const skip = (filter.page_number - 1) * filter.page_size;
 
@@ -58,6 +57,31 @@ export class TableReservationsRepository implements ITableReservationsRepository
       },
       select: { id: true },
     });
+  }
+
+  findForDate(
+    filter: FindReservationsInRangeFilter,
+  ): Promise<ReservationRangeRecord[]> {
+    return this.db.getClient().table_reservation.findMany({
+      where: {
+        table_id: filter.table_id,
+        start_at: { lt: filter.day_end },
+        end_at: { gt: filter.day_start },
+      },
+      orderBy: { start_at: 'asc' },
+      select: { start_at: true, end_at: true },
+    });
+  }
+
+  private buildDayOverlap(day_start: Date): {
+    start_at: { lt: Date };
+    end_at: { gt: Date };
+  } {
+    const day_end = new Date(day_start.getTime() + 24 * 60 * 60 * 1000);
+    return {
+      start_at: { lt: day_end },
+      end_at: { gt: day_start },
+    };
   }
 
   create(input: CreateTableReservationInput): Promise<TableReservationRecord> {

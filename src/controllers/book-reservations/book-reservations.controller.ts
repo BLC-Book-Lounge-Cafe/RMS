@@ -12,6 +12,7 @@ import { ApiUnauthorizedResponse } from '@guards/auth.guard';
 import { BookReservationsService } from '@services/book-reservations/book-reservations.service';
 import { BookAlreadyReserved } from '@services/book-reservations/book-reservations.errors';
 import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
+import { InvalidDateFormat } from '@controllers/errors/controllers.errors';
 import {
   BookReservationModel,
   BookReservationsQueryDto,
@@ -37,11 +38,13 @@ export class BookReservationsController {
   })
   @ApiBadRequestResponse({
     description: 'Невалидные query-параметры',
-    schema: {
-      example: {
-        message: ['Неверный формат reserved_at, ожидается YYYY-MM-DD'],
-        error: 'Bad Request',
-        statusCode: 400,
+    content: {
+      'application/json': {
+        examples: {
+          [InvalidDateFormat.message]: {
+            value: { error: InvalidDateFormat },
+          },
+        },
       },
     },
   })
@@ -87,11 +90,17 @@ export class BookReservationsController {
     description: 'Созданное бронирование книги',
   })
   @ApiBadRequestResponse({
-    description: 'Бронирование на прошедшую дату невозможно',
+    description:
+      'Невалидные данные бронирования книги либо бронирование на прошедшую дату',
     content: {
       'application/json': {
         examples: {
-          [PastDateNotAllowed.message]: { value: { error: PastDateNotAllowed } },
+          [InvalidDateFormat.message]: {
+            value: { error: InvalidDateFormat },
+          },
+          [PastDateNotAllowed.message]: {
+            value: { error: PastDateNotAllowed },
+          },
         },
       },
     },

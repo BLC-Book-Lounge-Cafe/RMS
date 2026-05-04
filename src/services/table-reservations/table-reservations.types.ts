@@ -33,3 +33,25 @@ export interface FindOverlappingTableReservationFilter {
   start_at: Date;
   end_at: Date;
 }
+
+export interface FindReservationsInRangeFilter {
+  table_id: number;
+  day_start: Date;
+  day_end: Date;
+}
+
+export interface ReservationRangeRecord {
+  start_at: Date;
+  end_at: Date;
+}
+
+export interface ListAvailabilityInput {
+  table_id: number;
+  date: Date;
+}
+
+export interface TableSlotRecord {
+  start_at: Date;
+  end_at: Date;
+  is_reserved: boolean;
+}

@@ -6,6 +6,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from '@app.module';
 import { setupOtel } from '@telemetry';
 import { AllExceptionsFilter } from '@filters/all-exceptions.filter';
+import { validationException } from '@utils/validators';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -18,6 +19,7 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,
       whitelist: true,
+      exceptionFactory: validationException,
     }),
   );
   app.setGlobalPrefix('api');

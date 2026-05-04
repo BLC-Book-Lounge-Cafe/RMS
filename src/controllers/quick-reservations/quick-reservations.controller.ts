@@ -26,6 +26,10 @@ import {
   QuickReservationNotFound,
 } from '@services/quick-reservations/quick-reservations.errors';
 import {
+  InvalidDateFormat,
+  InvalidPhoneFormat,
+} from '@controllers/errors/controllers.errors';
+import {
   CreateQuickReservationDto,
   QuickReservationModel,
   QuickReservationsResponse,
@@ -54,11 +58,13 @@ export class QuickReservationsController {
   })
   @ApiBadRequestResponse({
     description: 'Невалидные query-параметры',
-    schema: {
-      example: {
-        message: ['Неверный формат created_date, ожидается YYYY-MM-DD'],
-        error: 'Bad Request',
-        statusCode: 400,
+    content: {
+      'application/json': {
+        examples: {
+          [InvalidDateFormat.message]: {
+            value: { error: InvalidDateFormat },
+          },
+        },
       },
     },
   })
@@ -102,6 +108,18 @@ export class QuickReservationsController {
   @ApiCreatedResponse({
     type: QuickReservationModel,
     description: 'Созданная заявка на быстрое бронирование',
+  })
+  @ApiBadRequestResponse({
+    description: 'Невалидные данные заявки на быстрое бронирование',
+    content: {
+      'application/json': {
+        examples: {
+          [InvalidPhoneFormat.message]: {
+            value: { error: InvalidPhoneFormat },
+          },
+        },
+      },
+    },
   })
   async create(
     @Body() dto: CreateQuickReservationDto,

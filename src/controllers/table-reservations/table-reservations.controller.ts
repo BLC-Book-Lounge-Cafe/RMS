@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -6,6 +15,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiUnauthorizedResponse } from '@guards/auth.guard';
@@ -16,10 +26,18 @@ import {
 } from '@services/table-reservations/table-reservations.errors';
 import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
 import {
+  InvalidDateFormat,
+  InvalidIsoDateTimeFormat,
+  InvalidPhoneFormat,
+} from '@controllers/errors/controllers.errors';
+import {
   CreateTableReservationDto,
   TableReservationModel,
   TableReservationsQueryDto,
   TableReservationsResponse,
+  TableSlotModel,
+  TableSlotsQueryDto,
+  TableSlotsResponse,
 } from './table-reservations.models';
 
 @ApiTags('Бронирование столов')
@@ -40,11 +58,13 @@ export class TableReservationsController {
   })
   @ApiBadRequestResponse({
     description: 'Невалидные query-параметры',
-    schema: {
-      example: {
-        message: ['Неверный формат active_at, ожидается ISO-8601'],
-        error: 'Bad Request',
-        statusCode: 400,
+    content: {
+      'application/json': {
+        examples: {
+          [InvalidDateFormat.message]: {
+            value: { error: InvalidDateFormat },
+          },
+        },
       },
     },
   })
@@ -56,7 +76,9 @@ export class TableReservationsController {
 
     const { items, total_entries } = await this.service.findAll({
       table_id: query.table_id,
-      active_at: query.active_at ? new Date(query.active_at) : undefined,
+      active_at: query.active_at
+        ? new Date(`${query.active_at}T00:00:00.000Z`)
+        : undefined,
       page_number,
       page_size,
     });
@@ -79,6 +101,54 @@ export class TableReservationsController {
     };
   }
 
+  @Get(':table_id/slots')
+  @ApiOperation({
+    summary: 'Просмотр слотов стола',
+    description:
+      'Возвращает все часовые слоты на указанную дату для конкретного стола',
+  })
+  @ApiParam({
+    name: 'table_id',
+    type: Number,
+    description: 'ID стола, для которого нужны слоты',
+    example: 2,
+  })
+  @ApiOkResponse({
+    type: TableSlotsResponse,
+    description: 'Все слоты стола на запрошенную дату с пометкой занятости',
+  })
+  @ApiBadRequestResponse({
+    description: 'Невалидные параметры пути или query',
+    content: {
+      'application/json': {
+        examples: {
+          [InvalidDateFormat.message]: {
+            value: { error: InvalidDateFormat },
+          },
+        },
+      },
+    },
+  })
+  async getSlots(
+    @Param('table_id', ParseIntPipe) table_id: number,
+    @Query() query: TableSlotsQueryDto,
+  ): Promise<TableSlotsResponse> {
+    const slots = await this.service.listAvailability({
+      table_id,
+      date: new Date(`${query.date}T00:00:00.000Z`),
+    });
+
+    return {
+      slots: slots.map(
+        (slot): TableSlotModel => ({
+          start_at: slot.start_at,
+          end_at: slot.end_at,
+          is_reserved: slot.is_reserved,
+        }),
+      ),
+    };
+  }
+
   @Post()
   @HttpCode(201)
   @ApiOperation({
@@ -92,11 +162,20 @@ export class TableReservationsController {
     description: 'Созданное бронирование стола',
   })
   @ApiBadRequestResponse({
-    description: 'Бронирование на прошедшую дату невозможно',
+    description:
+      'Невалидные данные бронирования стола либо бронирование на прошедшую дату',
     content: {
       'application/json': {
         examples: {
-          [PastDateNotAllowed.message]: { value: { error: PastDateNotAllowed } },
+          [InvalidPhoneFormat.message]: {
+            value: { error: InvalidPhoneFormat },
+          },
+          [InvalidIsoDateTimeFormat.message]: {
+            value: { error: InvalidIsoDateTimeFormat },
+          },
+          [PastDateNotAllowed.message]: {
+            value: { error: PastDateNotAllowed },
+          },
         },
       },
     },
