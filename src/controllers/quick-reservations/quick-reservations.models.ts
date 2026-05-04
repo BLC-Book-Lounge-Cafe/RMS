@@ -11,6 +11,10 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import {
+  InvalidDateFormat,
+  InvalidPhoneFormat,
+} from '@controllers/errors/controllers.errors';
 
 export enum ReservationStatusDto {
   pending = 'pending',
@@ -35,9 +39,7 @@ export class ReservationsQueryDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'Неверный формат created_date, ожидается YYYY-MM-DD',
-  })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: JSON.stringify(InvalidDateFormat) })
   created_date?: string;
 
   @ApiPropertyOptional({
@@ -107,7 +109,7 @@ export class CreateQuickReservationDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
-  @Matches(/^\+7\d{10}$/, { message: 'Телефон должен быть в формате +7XXXXXXXXXX' })
+  @Matches(/^\+7\d{10}$/, { message: JSON.stringify(InvalidPhoneFormat) })
   phone: string;
 }
 

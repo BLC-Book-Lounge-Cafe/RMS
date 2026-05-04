@@ -10,6 +10,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { InvalidDateFormat } from '@controllers/errors/controllers.errors';
 
 export class BookReservationsQueryDto {
   @ApiPropertyOptional({
@@ -30,9 +31,7 @@ export class BookReservationsQueryDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'Неверный формат reserved_at, ожидается YYYY-MM-DD',
-  })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: JSON.stringify(InvalidDateFormat) })
   reserved_at?: string;
 
   @ApiPropertyOptional({
@@ -114,8 +113,6 @@ export class CreateBookReservationDto {
     format: 'date',
   })
   @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'Неверный формат reserved_at, ожидается YYYY-MM-DD',
-  })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: JSON.stringify(InvalidDateFormat) })
   reserved_at: string;
 }

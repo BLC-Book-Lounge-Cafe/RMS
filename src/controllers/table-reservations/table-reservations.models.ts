@@ -11,6 +11,11 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import {
+  InvalidDateFormat,
+  InvalidIsoDateTimeFormat,
+  InvalidPhoneFormat,
+} from '@controllers/errors/controllers.errors';
 
 export class TableReservationsQueryDto {
   @ApiPropertyOptional({
@@ -26,12 +31,13 @@ export class TableReservationsQueryDto {
 
   @ApiPropertyOptional({
     description:
-      'Фильтр по моменту времени (ISO-8601) — возвращает брони, активные в указанный момент: start_at <= active_at < end_at',
-    example: '2026-05-15T14:30:00.000Z',
-    format: 'date-time',
+      'Фильтр по дате (UTC, формат YYYY-MM-DD) — возвращает все брони, пересекающие указанный день. Часы/минуты не учитываются.',
+    example: '2026-05-15',
+    format: 'date',
   })
   @IsOptional()
-  @IsISO8601({}, { message: 'Неверный формат active_at, ожидается ISO-8601' })
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: JSON.stringify(InvalidDateFormat) })
   active_at?: string;
 
   @ApiPropertyOptional({
@@ -96,6 +102,36 @@ export class TableReservationsResponse {
   total_pages: number;
 }
 
+export class TableSlotsQueryDto {
+  @ApiProperty({
+    description: 'Дата (UTC, формат YYYY-MM-DD), на которую нужно построить слоты',
+    example: '2026-05-15',
+    format: 'date',
+  })
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: JSON.stringify(InvalidDateFormat) })
+  date: string;
+}
+
+export class TableSlotModel {
+  @ApiProperty({ format: 'date-time', description: 'Начало слота' })
+  start_at: Date;
+
+  @ApiProperty({ format: 'date-time', description: 'Конец слота' })
+  end_at: Date;
+
+  @ApiProperty({
+    description: 'Признак занятости слота: true — стол уже забронирован на это время',
+    example: false,
+  })
+  is_reserved: boolean;
+}
+
+export class TableSlotsResponse {
+  @ApiProperty({ type: [TableSlotModel], description: 'Все слоты на запрошенную дату' })
+  slots: TableSlotModel[];
+}
+
 export class CreateTableReservationDto {
   @ApiProperty({ description: 'ID стола', example: 2 })
   @IsInt()
@@ -112,14 +148,14 @@ export class CreateTableReservationDto {
   @ApiProperty({ example: '+79001234567' })
   @IsString()
   @MaxLength(20)
-  @Matches(/^\+7\d{10}$/, { message: 'Телефон должен быть в формате +7XXXXXXXXXX' })
+  @Matches(/^\+7\d{10}$/, { message: JSON.stringify(InvalidPhoneFormat) })
   phone: string;
 
   @ApiProperty({ format: 'date-time', description: 'Начало брони (ISO-8601)' })
-  @IsISO8601({}, { message: 'Неверный формат start_at, ожидается ISO-8601' })
+  @IsISO8601({}, { message: JSON.stringify(InvalidIsoDateTimeFormat) })
   start_at: string;
 
   @ApiProperty({ format: 'date-time', description: 'Конец брони (ISO-8601). Должен быть позже start_at' })
-  @IsISO8601({}, { message: 'Неверный формат end_at, ожидается ISO-8601' })
+  @IsISO8601({}, { message: JSON.stringify(InvalidIsoDateTimeFormat) })
   end_at: string;
 }
