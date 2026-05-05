@@ -44,7 +44,7 @@ import {
   TableSlotsResponse,
 } from './table-reservations.models';
 
-@ApiTags('Бронирование столов')
+@ApiTags('Table')
 @ApiBearerAuth('Bearer')
 @ApiUnauthorizedResponse()
 @Controller('v1/tables')

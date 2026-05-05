@@ -38,7 +38,7 @@ import {
   UpdateQuickReservationDto,
 } from './quick-reservations.models';
 
-@ApiTags('Быстрое бронирование')
+@ApiTags('Quick')
 @ApiBearerAuth('Bearer')
 @ApiUnauthorizedResponse()
 @Controller('v1/quicks')
