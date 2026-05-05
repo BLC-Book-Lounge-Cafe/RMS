@@ -1,4 +1,5 @@
-import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { TableReservationNotFound } from '@controllers/errors/controllers.errors';
 import { ITableReservationsRepository } from '@infrastructure/adapters/table-reservations/table-reservations.repository.interface';
 import { ICafeScheduleRepository } from '@infrastructure/adapters/cafe-schedule/cafe-schedule.repository.interface';
 import { CafeScheduleRecord } from '@services/cafe-schedule/cafe-schedule.types';
@@ -25,6 +26,14 @@ export class TableReservationsService {
 
   findAll(filter: FindTableReservationsFilter): Promise<FindTableReservationsResult> {
     return this.repository.findAll(filter);
+  }
+
+  async remove(id: number): Promise<void> {
+    const existing = await this.repository.findById(id);
+    if (!existing) {
+      throw new NotFoundException(TableReservationNotFound);
+    }
+    await this.repository.delete(id);
   }
 
   async create(input: CreateTableReservationInput): Promise<TableReservationRecord> {

@@ -12,4 +12,6 @@ export interface IBookReservationsRepository {
     filter: FindBookReservationOnDateFilter,
   ): Promise<{ id: number } | null>;
   create(input: CreateBookReservationInput): Promise<BookReservationRecord>;
+  findById(id: number): Promise<{ id: number } | null>;
+  delete(id: number): Promise<void>;
 }

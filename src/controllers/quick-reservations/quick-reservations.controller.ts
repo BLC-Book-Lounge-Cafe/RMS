@@ -140,9 +140,7 @@ export class QuickReservationsController {
   @Put(':id/status')
   @ApiOperation({
     summary: 'Изменение статуса заявки на быстрое бронирование',
-    description:
-      'Переводит заявку из статуса pending в confirmed или cancelled. ' +
-      'Если заявка уже обработана (статус не pending), возвращается 409 Conflict.',
+    description: 'Переводит заявку из статуса pending в confirmed или cancelled.',
   })
   @ApiOkResponse({
     type: QuickReservationModel,

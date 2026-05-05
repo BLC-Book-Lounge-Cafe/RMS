@@ -17,4 +17,6 @@ export interface ITableReservationsRepository {
     filter: FindReservationsInRangeFilter,
   ): Promise<ReservationRangeRecord[]>;
   create(input: CreateTableReservationInput): Promise<TableReservationRecord>;
+  findById(id: number): Promise<{ id: number } | null>;
+  delete(id: number): Promise<void>;
 }
