@@ -54,6 +54,17 @@ export class BookReservationsRepository implements IBookReservationsRepository {
     });
   }
 
+  findById(id: number): Promise<{ id: number } | null> {
+    return this.db.getClient().book_reservation.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.db.getClient().book_reservation.delete({ where: { id } });
+  }
+
   create(input: CreateBookReservationInput): Promise<BookReservationRecord> {
     return this.db.getClient().book_reservation.create({
       data: {

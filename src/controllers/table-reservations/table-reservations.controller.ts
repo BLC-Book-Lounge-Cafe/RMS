@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -13,6 +14,8 @@ import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -29,6 +32,7 @@ import {
   InvalidDateFormat,
   InvalidIsoDateTimeFormat,
   InvalidPhoneFormat,
+  TableReservationNotFound,
 } from '@controllers/errors/controllers.errors';
 import {
   CreateTableReservationDto,
@@ -153,9 +157,7 @@ export class TableReservationsController {
   @HttpCode(201)
   @ApiOperation({
     summary: 'Создание бронирования стола',
-    description:
-      'Создаёт новое бронирование стола. Если на указанный стол уже есть бронь, ' +
-      'пересекающаяся по времени со start_at/end_at, возвращается 409 Conflict.',
+    description: 'Создаёт новое бронирование стола.',
   })
   @ApiCreatedResponse({
     type: TableReservationModel,
@@ -216,5 +218,29 @@ export class TableReservationsController {
       start_at: item.start_at,
       end_at: item.end_at,
     };
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({
+    summary: 'Удаление бронирования стола',
+    description: 'Удаляет бронирование стола по его ID.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'ID бронирования стола' })
+  @ApiNoContentResponse({ description: 'Бронирование удалено' })
+  @ApiNotFoundResponse({
+    description: 'Бронирование стола не найдено',
+    content: {
+      'application/json': {
+        examples: {
+          [TableReservationNotFound.message]: {
+            value: { error: TableReservationNotFound },
+          },
+        },
+      },
+    },
+  })
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.service.remove(id);
   }
 }

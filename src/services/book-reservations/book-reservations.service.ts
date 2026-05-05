@@ -1,4 +1,5 @@
-import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BookReservationNotFound } from '@controllers/errors/controllers.errors';
 import { IBookReservationsRepository } from '@infrastructure/adapters/book-reservations/book-reservations.repository.interface';
 import {
   BookReservationRecord,
@@ -18,6 +19,14 @@ export class BookReservationsService {
 
   findAll(filter: FindBookReservationsFilter): Promise<FindBookReservationsResult> {
     return this.repository.findAll(filter);
+  }
+
+  async remove(id: number): Promise<void> {
+    const existing = await this.repository.findById(id);
+    if (!existing) {
+      throw new NotFoundException(BookReservationNotFound);
+    }
+    await this.repository.delete(id);
   }
 
   async create(input: CreateBookReservationInput): Promise<BookReservationRecord> {

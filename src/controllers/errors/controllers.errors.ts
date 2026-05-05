@@ -17,3 +17,13 @@ export const InvalidPhoneFormat = {
   code: '5d2e8f4a-1b9c-4f6e-a8d3-7c5b9e1f2a4d',
   message: 'Телефон должен быть в формате +7XXXXXXXXXX',
 };
+
+export const TableReservationNotFound = {
+  code: 'c1e7a2f3-4b8d-4e9a-b6c5-8d3f1a2e7c4b',
+  message: 'Бронь стола не найдена',
+};
+
+export const BookReservationNotFound = {
+  code: 'a9f3c1e2-7d4b-4a8e-b5c6-2f8d3e1c7a9b',
+  message: 'Бронь книги не найдена',
+};

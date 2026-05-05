@@ -84,6 +84,17 @@ export class TableReservationsRepository implements ITableReservationsRepository
     };
   }
 
+  findById(id: number): Promise<{ id: number } | null> {
+    return this.db.getClient().table_reservation.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.db.getClient().table_reservation.delete({ where: { id } });
+  }
+
   create(input: CreateTableReservationInput): Promise<TableReservationRecord> {
     return this.db.getClient().table_reservation.create({
       data: {

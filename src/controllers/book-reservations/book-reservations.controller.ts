@@ -1,18 +1,21 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiUnauthorizedResponse } from '@guards/auth.guard';
 import { BookReservationsService } from '@services/book-reservations/book-reservations.service';
 import { BookAlreadyReserved } from '@services/book-reservations/book-reservations.errors';
 import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
-import { InvalidDateFormat } from '@controllers/errors/controllers.errors';
+import { BookReservationNotFound, InvalidDateFormat } from '@controllers/errors/controllers.errors';
 import {
   BookReservationModel,
   BookReservationsQueryDto,
@@ -81,9 +84,7 @@ export class BookReservationsController {
   @HttpCode(201)
   @ApiOperation({
     summary: 'Создание бронирования книги',
-    description:
-      'Создаёт новое бронирование книги на указанную дату. Если книга уже забронирована ' +
-      'на эту дату (по book_id + reserved_at), возвращается 409 Conflict.',
+    description: 'Создаёт новое бронирование книги на указанную дату.',
   })
   @ApiCreatedResponse({
     type: BookReservationModel,
@@ -130,5 +131,29 @@ export class BookReservationsController {
       name: item.name,
       reserved_at: item.reserved_at,
     };
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({
+    summary: 'Удаление бронирования книги',
+    description: 'Удаляет бронирование книги по его ID.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'ID бронирования книги' })
+  @ApiNoContentResponse({ description: 'Бронирование удалено' })
+  @ApiNotFoundResponse({
+    description: 'Бронирование книги не найдено',
+    content: {
+      'application/json': {
+        examples: {
+          [BookReservationNotFound.message]: {
+            value: { error: BookReservationNotFound },
+          },
+        },
+      },
+    },
+  })
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.service.remove(id);
   }
 }
