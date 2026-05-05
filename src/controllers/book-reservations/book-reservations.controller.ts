@@ -23,7 +23,7 @@ import {
   CreateBookReservationDto,
 } from './book-reservations.models';
 
-@ApiTags('Бронирование книг')
+@ApiTags('Book')
 @ApiBearerAuth('Bearer')
 @ApiUnauthorizedResponse()
 @Controller('v1/books')
