@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { InvalidDateFormat } from '@controllers/errors/controllers.errors';
+import { IsValidPhone } from '@utils/validators';
 
 export class BookReservationsQueryDto {
   @ApiPropertyOptional({
@@ -69,6 +70,9 @@ export class BookReservationModel {
   @ApiProperty({ example: 'Иван' })
   name: string;
 
+  @ApiProperty({ example: '+79001234567' })
+  phone: string;
+
   @ApiProperty({
     description: 'Дата бронирования (YYYY-MM-DD)',
     format: 'date',
@@ -106,6 +110,10 @@ export class CreateBookReservationDto {
   @IsNotEmpty()
   @MaxLength(255)
   name: string;
+
+  @ApiProperty({ example: '+79001234567' })
+  @IsValidPhone()
+  phone: string;
 
   @ApiProperty({
     description: 'Дата бронирования в формате YYYY-MM-DD',

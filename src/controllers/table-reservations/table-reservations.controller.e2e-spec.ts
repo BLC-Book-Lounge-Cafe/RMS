@@ -9,7 +9,11 @@ import { DatabaseRmsClient } from '@clients/database/database-rms.client';
 import { Unauthorized } from '@guards/guards.errors';
 import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
 import { TableMinDurationViolation, TableSlotConflict } from '@services/table-reservations/table-reservations.errors';
-import { TableReservationNotFound } from '@controllers/errors/controllers.errors';
+import {
+  InvalidPhoneFormat,
+  TableReservationNotFound,
+  ValidationFailed,
+} from '@controllers/errors/controllers.errors';
 
 const API_KEY = process.env.RMS_API_KEY ?? 'local-dev-key';
 
@@ -89,6 +93,39 @@ describe('table-reservations.controller (e2e)', () => {
         where: { id: res.body.id },
       });
       expect(record).not.toBeNull();
+    });
+
+    it('должен вернуть 400 ValidationFailed, если phone не передан', async () => {
+      return request(app.getHttpServer())
+        .post('/v1/tables')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({
+          table_id: 1,
+          name: 'Иван',
+          start_at: isoDatetime(2),
+          end_at: isoDatetime(4),
+        })
+        .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
+          expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual({ error: ValidationFailed });
+        });
+    });
+
+    it('должен вернуть 400 InvalidPhoneFormat при неверном формате телефона', async () => {
+      return request(app.getHttpServer())
+        .post('/v1/tables')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({
+          table_id: 1,
+          name: 'Иван',
+          phone: '12345',
+          start_at: isoDatetime(2),
+          end_at: isoDatetime(4),
+        })
+        .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
+          expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual({ error: InvalidPhoneFormat });
+        });
     });
 
     it('должен вернуть 400 PastDateNotAllowed, если start_at в прошлом', async () => {
