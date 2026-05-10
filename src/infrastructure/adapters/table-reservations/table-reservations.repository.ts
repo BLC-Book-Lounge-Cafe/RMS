@@ -20,7 +20,19 @@ export class TableReservationsRepository implements ITableReservationsRepository
   ): Promise<FindTableReservationsResult> {
     const where = {
       ...(filter.table_id !== undefined && { table_id: filter.table_id }),
-      ...(filter.active_at !== undefined && this.buildDayOverlap(filter.active_at)),
+      AND: [
+        ...(filter.active_at !== undefined
+          ? [this.buildDayOverlap(filter.active_at)]
+          : []),
+        ...(filter.active_at_time !== undefined
+          ? [
+              {
+                start_at: { lte: filter.active_at_time },
+                end_at: { gt: filter.active_at_time },
+              },
+            ]
+          : []),
+      ],
     };
     const skip = (filter.page_number - 1) * filter.page_size;
 

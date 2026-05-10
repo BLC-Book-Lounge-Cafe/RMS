@@ -159,6 +159,61 @@ describe('table-reservations.service', () => {
       expect(result.items[0].table_id).toBe(5);
     });
 
+    it('должен фильтровать по active_at_time — возвращать бронь, попадающую в промежуток', async () => {
+      const start_at = futureDate(2);
+      const end_at = futureDate(4);
+      await service.create({ table_id: 20, name: 'Иван', phone: '+79001234567', start_at, end_at });
+
+      const active_at_time = futureDate(3);
+
+      const result = await service.findAll({ active_at_time, page_number: 1, page_size: 20 });
+
+      expect(result.total_entries).toBe(1);
+      expect(result.items[0].table_id).toBe(20);
+    });
+
+    it('должен возвращать пусто, если active_at_time вне промежутка', async () => {
+      const start_at = futureDate(2);
+      const end_at = futureDate(4);
+      await service.create({ table_id: 21, name: 'Иван', phone: '+79001234567', start_at, end_at });
+
+      const active_at_time = futureDate(5);
+
+      const result = await service.findAll({ active_at_time, page_number: 1, page_size: 20 });
+
+      expect(result.total_entries).toBe(0);
+      expect(result.items).toHaveLength(0);
+    });
+
+    it('должен исключать бронь, если active_at_time равен end_at (end exclusive)', async () => {
+      const start_at = futureDate(2);
+      const end_at = futureDate(4);
+      await service.create({ table_id: 22, name: 'Иван', phone: '+79001234567', start_at, end_at });
+
+      const result = await service.findAll({ active_at_time: end_at, page_number: 1, page_size: 20 });
+
+      expect(result.total_entries).toBe(0);
+    });
+
+    it('должен комбинировать table_id и active_at_time', async () => {
+      const start_at = futureDate(2);
+      const end_at = futureDate(4);
+      await service.create({ table_id: 30, name: 'Иван', phone: '+79001234567', start_at, end_at });
+      await service.create({ table_id: 31, name: 'Мария', phone: '+79007654321', start_at, end_at });
+
+      const active_at_time = futureDate(3);
+
+      const result = await service.findAll({
+        table_id: 30,
+        active_at_time,
+        page_number: 1,
+        page_size: 20,
+      });
+
+      expect(result.total_entries).toBe(1);
+      expect(result.items[0].table_id).toBe(30);
+    });
+
     it('должен соблюдать постраничную навигацию', async () => {
       await service.create({ table_id: 1, name: 'Первый', phone: '+79001234567', start_at: futureDate(2), end_at: futureDate(4) });
       await service.create({ table_id: 2, name: 'Второй', phone: '+79001234568', start_at: futureDate(5), end_at: futureDate(7) });

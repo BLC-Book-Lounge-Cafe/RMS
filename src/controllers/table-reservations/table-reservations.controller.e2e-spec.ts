@@ -10,6 +10,7 @@ import { Unauthorized } from '@guards/guards.errors';
 import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
 import { TableMinDurationViolation, TableSlotConflict } from '@services/table-reservations/table-reservations.errors';
 import {
+  InvalidIsoDateTimeFormat,
   InvalidPhoneFormat,
   TableReservationNotFound,
   ValidationFailed,
@@ -230,6 +231,39 @@ describe('table-reservations.controller (e2e)', () => {
           expect(statusCode).toBe(HttpStatus.OK);
           expect(body.total_entries).toBe(1);
           expect(body.reservations[0].table_id).toBe(10);
+        });
+    });
+
+    it('должен фильтровать по active_at в формате date-time — возвращать только активные в этот момент брони', async () => {
+      await request(app.getHttpServer())
+        .post('/v1/tables')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ table_id: 40, name: 'Иван', phone: '+79001234567', start_at: isoDatetime(2), end_at: isoDatetime(4) });
+
+      await request(app.getHttpServer())
+        .post('/v1/tables')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ table_id: 41, name: 'Мария', phone: '+79007654321', start_at: isoDatetime(6), end_at: isoDatetime(8) });
+
+      return request(app.getHttpServer())
+        .get('/v1/tables')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .query({ active_at: isoDatetime(3) })
+        .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
+          expect(statusCode).toBe(HttpStatus.OK);
+          expect(body.total_entries).toBe(1);
+          expect(body.reservations[0].table_id).toBe(40);
+        });
+    });
+
+    it('должен вернуть 400 InvalidIsoDateTimeFormat при невалидном active_at', async () => {
+      return request(app.getHttpServer())
+        .get('/v1/tables')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .query({ active_at: 'not-a-timestamp' })
+        .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
+          expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual({ error: InvalidIsoDateTimeFormat });
         });
     });
   });

@@ -36,6 +36,7 @@ import {
 } from '@controllers/errors/controllers.errors';
 import {
   CreateTableReservationDto,
+  isIsoDateTime,
   TableReservationModel,
   TableReservationsQueryDto,
   TableReservationsResponse,
@@ -65,8 +66,8 @@ export class TableReservationsController {
     content: {
       'application/json': {
         examples: {
-          [InvalidDateFormat.message]: {
-            value: { error: InvalidDateFormat },
+          [InvalidIsoDateTimeFormat.message]: {
+            value: { error: InvalidIsoDateTimeFormat },
           },
         },
       },
@@ -78,11 +79,19 @@ export class TableReservationsController {
     const page_number = query.page_number ?? 1;
     const page_size = query.page_size ?? 20;
 
+    const active_at_is_datetime =
+      query.active_at !== undefined && isIsoDateTime(query.active_at);
+
     const { items, total_entries } = await this.service.findAll({
       table_id: query.table_id,
-      active_at: query.active_at
-        ? new Date(`${query.active_at}T00:00:00.000Z`)
-        : undefined,
+      active_at:
+        query.active_at !== undefined && !active_at_is_datetime
+          ? new Date(`${query.active_at}T00:00:00.000Z`)
+          : undefined,
+      active_at_time:
+        query.active_at !== undefined && active_at_is_datetime
+          ? new Date(query.active_at)
+          : undefined,
       page_number,
       page_size,
     });
