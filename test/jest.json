@@ -8,8 +8,19 @@
   "testEnvironment": "node",
   "testRegex": ".(e2e-)?spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.ts$": "ts-jest",
+    "^.+\\.js$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "allowJs": true
+        }
+      }
+    ]
   },
+  "transformIgnorePatterns": [
+    "node_modules/.pnpm/.+/node_modules/(?!uuid).+"
+  ],
   "setupFiles": [
     "<rootDir>/test/setup-tests.ts"
   ],
@@ -19,10 +30,18 @@
     "<rootDir>/test/*"
   ],
   "moduleNameMapper": {
+    "^@controllers/(.*)$": "<rootDir>/src/controllers/$1",
+    "^@services/(.*)$": "<rootDir>/src/services/$1",
+    "^@infrastructure/(.*)$": "<rootDir>/src/infrastructure/$1",
+    "^@modules/(.*)$": "<rootDir>/src/modules/$1",
+    "^@utils/(.*)$": "<rootDir>/src/utils/$1",
+    "^@filters/(.*)$": "<rootDir>/src/filters/$1",
     "^@clients/(.*)$": "<rootDir>/src/infrastructure/clients/$1",
     "^@config/(.*)$": "<rootDir>/src/infrastructure/config/$1",
     "^@guards/(.*)$": "<rootDir>/src/guards/$1",
     "^@test/(.*)$": "<rootDir>/test/$1",
-    "^@/(.*)$": "<rootDir>/src/$1"
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^@app\\.module$": "<rootDir>/src/app.module",
+    "^@telemetry$": "<rootDir>/src/telemetry"
   }
 }
