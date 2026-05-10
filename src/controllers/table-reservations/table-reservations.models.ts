@@ -17,6 +17,8 @@ import {
 } from '@controllers/errors/controllers.errors';
 import { IsValidPhone } from '@utils/validators';
 
+export const isIsoDateTime = (value: string): boolean => value.includes('T');
+
 export class TableReservationsQueryDto {
   @ApiPropertyOptional({
     description: 'Фильтр по ID стола',
@@ -31,13 +33,14 @@ export class TableReservationsQueryDto {
 
   @ApiPropertyOptional({
     description:
-      'Фильтр по дате (UTC, формат YYYY-MM-DD) — возвращает все брони, пересекающие указанный день. Часы/минуты не учитываются.',
-    example: '2026-05-15',
-    format: 'date',
+      'Фильтр по дате (UTC, ISO-8601). Принимает либо date `YYYY-MM-DD` — возвращает брони, активные в указанный день; либо date-time — возвращает брони, активные в указанный момент времени.',
+    examples: {
+      date: { summary: 'date (день)', value: '2026-05-15' },
+      'date-time': { summary: 'date-time (момент)', value: '2026-05-10T16:31:00Z' },
+    },
   })
   @IsOptional()
-  @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: JSON.stringify(InvalidDateFormat) })
+  @IsISO8601({}, { message: JSON.stringify(InvalidIsoDateTimeFormat) })
   active_at?: string;
 
   @ApiPropertyOptional({
