@@ -7,7 +7,10 @@ import { AllExceptionsFilter } from '@filters/all-exceptions.filter';
 import { validationException } from '@utils/validators';
 import { DatabaseRmsClient } from '@clients/database/database-rms.client';
 import { Unauthorized } from '@guards/guards.errors';
-import { ValidationFailed, InvalidPhoneFormat } from '@controllers/errors/controllers.errors';
+import {
+  ValidationFailed,
+  InvalidPhoneFormat,
+} from '@controllers/errors/controllers.errors';
 import {
   QuickReservationAlreadyResolved,
   QuickReservationNotFound,
@@ -78,6 +81,17 @@ describe('quick-reservations.controller (e2e)', () => {
         .post('/v1/quicks')
         .set('Authorization', `Bearer ${API_KEY}`)
         .send({ phone: '+79001234567' })
+        .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
+          expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual({ error: ValidationFailed });
+        });
+    });
+
+    it('должен вернуть 400 ValidationFailed, если phone не передан', async () => {
+      return request(app.getHttpServer())
+        .post('/v1/quicks')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ name: 'Иван' })
         .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
           expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
           expect(body).toStrictEqual({ error: ValidationFailed });

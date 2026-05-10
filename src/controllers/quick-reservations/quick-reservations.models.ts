@@ -11,10 +11,8 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  InvalidDateFormat,
-  InvalidPhoneFormat,
-} from '@controllers/errors/controllers.errors';
+import { InvalidDateFormat } from '@controllers/errors/controllers.errors';
+import { IsValidPhone } from '@utils/validators';
 
 export enum ReservationStatusDto {
   pending = 'pending',
@@ -106,10 +104,7 @@ export class CreateQuickReservationDto {
   name: string;
 
   @ApiProperty({ example: '+79001234567' })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(20)
-  @Matches(/^\+7\d{10}$/, { message: JSON.stringify(InvalidPhoneFormat) })
+  @IsValidPhone()
   phone: string;
 }
 

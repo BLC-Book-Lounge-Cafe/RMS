@@ -32,6 +32,7 @@ export class BookReservationsRepository implements IBookReservationsRepository {
           id: true,
           book_id: true,
           name: true,
+          phone: true,
           reserved_at: true,
           created_at: true,
         },
@@ -70,12 +71,14 @@ export class BookReservationsRepository implements IBookReservationsRepository {
       data: {
         book_id: input.book_id,
         name: input.name,
+        phone: input.phone,
         reserved_at: input.reserved_at,
       },
       select: {
         id: true,
         book_id: true,
         name: true,
+        phone: true,
         reserved_at: true,
         created_at: true,
       },

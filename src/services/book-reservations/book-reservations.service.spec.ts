@@ -45,12 +45,14 @@ describe('book-reservations.service', () => {
       const result = await service.create({
         book_id: 1,
         name: 'Иван',
+        phone: '+79001234567',
         reserved_at: TOMORROW,
       });
 
       expect(result).toMatchObject({
         book_id: 1,
         name: 'Иван',
+        phone: '+79001234567',
         reserved_at: TOMORROW,
       });
       expect(result.id).toBeDefined();
@@ -62,6 +64,7 @@ describe('book-reservations.service', () => {
         service.create({
           book_id: 1,
           name: 'Иван',
+          phone: '+79001234567',
           reserved_at: YESTERDAY,
         }),
       ).rejects.toMatchObject({
@@ -70,21 +73,22 @@ describe('book-reservations.service', () => {
     });
 
     it('должен выбросить ConflictException, если книга уже забронирована на эту дату', async () => {
-      await service.create({ book_id: 2, name: 'Иван', reserved_at: TOMORROW });
+      await service.create({ book_id: 2, name: 'Иван', phone: '+79001234567', reserved_at: TOMORROW });
 
       await expect(
-        service.create({ book_id: 2, name: 'Мария', reserved_at: TOMORROW }),
+        service.create({ book_id: 2, name: 'Мария', phone: '+79007654321', reserved_at: TOMORROW }),
       ).rejects.toMatchObject({
         response: { code: '27eece6d-7477-430a-885f-76952181fee1' },
       });
     });
 
     it('должен позволить забронировать ту же книгу на другую дату', async () => {
-      await service.create({ book_id: 3, name: 'Иван', reserved_at: TOMORROW });
+      await service.create({ book_id: 3, name: 'Иван', phone: '+79001234567', reserved_at: TOMORROW });
 
       const result = await service.create({
         book_id: 3,
         name: 'Мария',
+        phone: '+79007654321',
         reserved_at: DAY_AFTER_TOMORROW,
       });
 
@@ -104,8 +108,8 @@ describe('book-reservations.service', () => {
     });
 
     it('должен вернуть список броней с пагинацией', async () => {
-      await service.create({ book_id: 1, name: 'Иван', reserved_at: TOMORROW });
-      await service.create({ book_id: 2, name: 'Мария', reserved_at: TOMORROW });
+      await service.create({ book_id: 1, name: 'Иван', phone: '+79001234567', reserved_at: TOMORROW });
+      await service.create({ book_id: 2, name: 'Мария', phone: '+79007654321', reserved_at: TOMORROW });
 
       const result = await service.findAll({
         page_number: 1,
@@ -117,8 +121,8 @@ describe('book-reservations.service', () => {
     });
 
     it('должен фильтровать по book_id', async () => {
-      await service.create({ book_id: 10, name: 'Иван', reserved_at: TOMORROW });
-      await service.create({ book_id: 11, name: 'Мария', reserved_at: TOMORROW });
+      await service.create({ book_id: 10, name: 'Иван', phone: '+79001234567', reserved_at: TOMORROW });
+      await service.create({ book_id: 11, name: 'Мария', phone: '+79007654321', reserved_at: TOMORROW });
 
       const result = await service.findAll({
         book_id: 10,
@@ -131,8 +135,8 @@ describe('book-reservations.service', () => {
     });
 
     it('должен фильтровать по reserved_at', async () => {
-      await service.create({ book_id: 5, name: 'Иван', reserved_at: TOMORROW });
-      await service.create({ book_id: 6, name: 'Мария', reserved_at: DAY_AFTER_TOMORROW });
+      await service.create({ book_id: 5, name: 'Иван', phone: '+79001234567', reserved_at: TOMORROW });
+      await service.create({ book_id: 6, name: 'Мария', phone: '+79007654321', reserved_at: DAY_AFTER_TOMORROW });
 
       const result = await service.findAll({
         reserved_at: TOMORROW,
@@ -145,9 +149,9 @@ describe('book-reservations.service', () => {
     });
 
     it('должен соблюдать постраничную навигацию', async () => {
-      await service.create({ book_id: 1, name: 'Первый', reserved_at: TOMORROW });
-      await service.create({ book_id: 2, name: 'Второй', reserved_at: TOMORROW });
-      await service.create({ book_id: 3, name: 'Третий', reserved_at: TOMORROW });
+      await service.create({ book_id: 1, name: 'Первый', phone: '+79001234561', reserved_at: TOMORROW });
+      await service.create({ book_id: 2, name: 'Второй', phone: '+79001234562', reserved_at: TOMORROW });
+      await service.create({ book_id: 3, name: 'Третий', phone: '+79001234563', reserved_at: TOMORROW });
 
       const page1 = await service.findAll({ page_number: 1, page_size: 2 });
       expect(page1.items).toHaveLength(2);
@@ -163,6 +167,7 @@ describe('book-reservations.service', () => {
       const created = await service.create({
         book_id: 1,
         name: 'Иван',
+        phone: '+79001234567',
         reserved_at: TOMORROW,
       });
 

@@ -15,7 +15,11 @@ import { ApiUnauthorizedResponse } from '@guards/auth.guard';
 import { BookReservationsService } from '@services/book-reservations/book-reservations.service';
 import { BookAlreadyReserved } from '@services/book-reservations/book-reservations.errors';
 import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
-import { BookReservationNotFound, InvalidDateFormat } from '@controllers/errors/controllers.errors';
+import {
+  BookReservationNotFound,
+  InvalidDateFormat,
+  InvalidPhoneFormat,
+} from '@controllers/errors/controllers.errors';
 import {
   BookReservationModel,
   BookReservationsQueryDto,
@@ -70,6 +74,7 @@ export class BookReservationsController {
           id: item.id,
           book_id: item.book_id,
           name: item.name,
+          phone: item.phone,
           reserved_at: item.reserved_at,
         }),
       ),
@@ -99,6 +104,9 @@ export class BookReservationsController {
           [InvalidDateFormat.message]: {
             value: { error: InvalidDateFormat },
           },
+          [InvalidPhoneFormat.message]: {
+            value: { error: InvalidPhoneFormat },
+          },
           [PastDateNotAllowed.message]: {
             value: { error: PastDateNotAllowed },
           },
@@ -122,6 +130,7 @@ export class BookReservationsController {
     const item = await this.service.create({
       book_id: dto.book_id,
       name: dto.name,
+      phone: dto.phone,
       reserved_at: new Date(dto.reserved_at),
     });
 
@@ -129,6 +138,7 @@ export class BookReservationsController {
       id: item.id,
       book_id: item.book_id,
       name: item.name,
+      phone: item.phone,
       reserved_at: item.reserved_at,
     };
   }

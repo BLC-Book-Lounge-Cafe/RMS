@@ -14,8 +14,8 @@ import { Type } from 'class-transformer';
 import {
   InvalidDateFormat,
   InvalidIsoDateTimeFormat,
-  InvalidPhoneFormat,
 } from '@controllers/errors/controllers.errors';
+import { IsValidPhone } from '@utils/validators';
 
 export class TableReservationsQueryDto {
   @ApiPropertyOptional({
@@ -146,9 +146,7 @@ export class CreateTableReservationDto {
   name: string;
 
   @ApiProperty({ example: '+79001234567' })
-  @IsString()
-  @MaxLength(20)
-  @Matches(/^\+7\d{10}$/, { message: JSON.stringify(InvalidPhoneFormat) })
+  @IsValidPhone()
   phone: string;
 
   @ApiProperty({ format: 'date-time', description: 'Начало брони (ISO-8601)' })

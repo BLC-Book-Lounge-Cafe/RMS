@@ -17,6 +17,7 @@ model book_reservation {
   id          Int      @id @default(autoincrement())
   book_id     Int
   name        String   @db.VarChar(255)
+  phone       String   @db.VarChar(20)
   reserved_at DateTime @db.Date
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt

@@ -7,7 +7,12 @@ import { AllExceptionsFilter } from '@filters/all-exceptions.filter';
 import { validationException } from '@utils/validators';
 import { DatabaseRmsClient } from '@clients/database/database-rms.client';
 import { Unauthorized } from '@guards/guards.errors';
-import { ValidationFailed, InvalidDateFormat, BookReservationNotFound } from '@controllers/errors/controllers.errors';
+import {
+  ValidationFailed,
+  InvalidDateFormat,
+  InvalidPhoneFormat,
+  BookReservationNotFound,
+} from '@controllers/errors/controllers.errors';
 import { BookAlreadyReserved } from '@services/book-reservations/book-reservations.errors';
 import { PastDateNotAllowed } from '@services/common/errors/reservations.errors';
 
@@ -61,7 +66,7 @@ describe('book-reservations.controller (e2e)', () => {
     it('должен вернуть 401, если Authorization не передан', async () => {
       return request(app.getHttpServer())
         .post('/v1/books')
-        .send({ book_id: 1, name: 'Иван', reserved_at: tomorrowDateString() })
+        .send({ book_id: 1, name: 'Иван', phone: '+79001234567', reserved_at: tomorrowDateString() })
         .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
           expect(statusCode).toBe(HttpStatus.UNAUTHORIZED);
           expect(body).toStrictEqual({ error: Unauthorized });
@@ -74,12 +79,13 @@ describe('book-reservations.controller (e2e)', () => {
       const res = await request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 1, name: 'Иван', reserved_at });
+        .send({ book_id: 1, name: 'Иван', phone: '+79001234567', reserved_at });
 
       expect(res.statusCode).toBe(HttpStatus.CREATED);
       expect(res.body.id).toBeDefined();
       expect(res.body.book_id).toBe(1);
       expect(res.body.name).toBe('Иван');
+      expect(res.body.phone).toBe('+79001234567');
       expect(res.body).not.toHaveProperty('created_at');
 
       const record = await db.getClient().book_reservation.findUnique({
@@ -92,7 +98,7 @@ describe('book-reservations.controller (e2e)', () => {
       return request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 1, reserved_at: tomorrowDateString() })
+        .send({ book_id: 1, phone: '+79001234567', reserved_at: tomorrowDateString() })
         .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
           expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
           expect(body).toStrictEqual({ error: ValidationFailed });
@@ -103,10 +109,32 @@ describe('book-reservations.controller (e2e)', () => {
       return request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 1, name: 'Иван', reserved_at: 'not-a-date' })
+        .send({ book_id: 1, name: 'Иван', phone: '+79001234567', reserved_at: 'not-a-date' })
         .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
           expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
           expect(body).toStrictEqual({ error: InvalidDateFormat });
+        });
+    });
+
+    it('должен вернуть 400 ValidationFailed, если phone не передан', async () => {
+      return request(app.getHttpServer())
+        .post('/v1/books')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ book_id: 1, name: 'Иван', reserved_at: tomorrowDateString() })
+        .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
+          expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual({ error: ValidationFailed });
+        });
+    });
+
+    it('должен вернуть 400 InvalidPhoneFormat при неверном формате телефона', async () => {
+      return request(app.getHttpServer())
+        .post('/v1/books')
+        .set('Authorization', `Bearer ${API_KEY}`)
+        .send({ book_id: 1, name: 'Иван', phone: '12345', reserved_at: tomorrowDateString() })
+        .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
+          expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual({ error: InvalidPhoneFormat });
         });
     });
 
@@ -114,7 +142,7 @@ describe('book-reservations.controller (e2e)', () => {
       return request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 1, name: 'Иван', reserved_at: yesterdayDateString() })
+        .send({ book_id: 1, name: 'Иван', phone: '+79001234567', reserved_at: yesterdayDateString() })
         .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
           expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
           expect(body).toStrictEqual({ error: PastDateNotAllowed });
@@ -127,12 +155,12 @@ describe('book-reservations.controller (e2e)', () => {
       await request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 2, name: 'Иван', reserved_at });
+        .send({ book_id: 2, name: 'Иван', phone: '+79001234567', reserved_at });
 
       return request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 2, name: 'Мария', reserved_at })
+        .send({ book_id: 2, name: 'Мария', phone: '+79007654321', reserved_at })
         .expect(({ statusCode, body }: { statusCode: HttpStatus; body: any }) => {
           expect(statusCode).toBe(HttpStatus.CONFLICT);
           expect(body).toStrictEqual({ error: BookAlreadyReserved });
@@ -172,12 +200,12 @@ describe('book-reservations.controller (e2e)', () => {
       await request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 50, name: 'Иван', reserved_at });
+        .send({ book_id: 50, name: 'Иван', phone: '+79001234567', reserved_at });
 
       await request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 51, name: 'Мария', reserved_at });
+        .send({ book_id: 51, name: 'Мария', phone: '+79007654321', reserved_at });
 
       return request(app.getHttpServer())
         .get('/v1/books')
@@ -187,6 +215,7 @@ describe('book-reservations.controller (e2e)', () => {
           expect(statusCode).toBe(HttpStatus.OK);
           expect(body.total_entries).toBe(1);
           expect(body.reservations[0].book_id).toBe(50);
+          expect(body.reservations[0].phone).toBe('+79001234567');
         });
     });
 
@@ -216,7 +245,7 @@ describe('book-reservations.controller (e2e)', () => {
       const { body } = await request(app.getHttpServer())
         .post('/v1/books')
         .set('Authorization', `Bearer ${API_KEY}`)
-        .send({ book_id: 1, name: 'Иван', reserved_at: tomorrowDateString() });
+        .send({ book_id: 1, name: 'Иван', phone: '+79001234567', reserved_at: tomorrowDateString() });
 
       return request(app.getHttpServer())
         .delete(`/v1/books/${body.id}`)
