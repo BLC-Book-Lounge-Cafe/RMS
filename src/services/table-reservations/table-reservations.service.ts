@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { TableReservationNotFound } from '@controllers/errors/controllers.errors';
-import { ITableReservationsRepository } from '@infrastructure/adapters/table-reservations/table-reservations.repository.interface';
-import { ICafeScheduleRepository } from '@infrastructure/adapters/cafe-schedule/cafe-schedule.repository.interface';
+import { ITableReservationsRepository } from './table-reservations.repository.interface';
+import { ICafeScheduleRepository } from '@services/cafe-schedule/cafe-schedule.repository.interface';
 import { CafeScheduleRecord } from '@services/cafe-schedule/cafe-schedule.types';
 import {
   CreateTableReservationInput,

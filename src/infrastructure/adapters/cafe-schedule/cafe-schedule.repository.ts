@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseRmsClient } from '@clients/database/database-rms.client';
 import { CafeScheduleRecord } from '@services/cafe-schedule/cafe-schedule.types';
-import { ICafeScheduleRepository } from './cafe-schedule.repository.interface';
+import { ICafeScheduleRepository } from '@services/cafe-schedule/cafe-schedule.repository.interface';
 
 @Injectable()
 export class CafeScheduleRepository implements ICafeScheduleRepository {
