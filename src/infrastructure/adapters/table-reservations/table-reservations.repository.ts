@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseRmsClient } from '@clients/database/database-rms.client';
-import { ITableReservationsRepository } from './table-reservations.repository.interface';
+import { ITableReservationsRepository } from '@services/table-reservations/table-reservations.repository.interface';
 import {
   CreateTableReservationInput,
   FindOverlappingTableReservationFilter,

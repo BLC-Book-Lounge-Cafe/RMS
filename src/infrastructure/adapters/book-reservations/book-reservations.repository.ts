@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseRmsClient } from '@clients/database/database-rms.client';
-import { IBookReservationsRepository } from './book-reservations.repository.interface';
+import { IBookReservationsRepository } from '@services/book-reservations/book-reservations.repository.interface';
 import {
   BookReservationRecord,
   CreateBookReservationInput,

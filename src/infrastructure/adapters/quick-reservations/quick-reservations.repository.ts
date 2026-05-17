@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseRmsClient } from '@clients/database/database-rms.client';
-import { IQuickReservationsRepository } from './quick-reservations.repository.interface';
+import { IQuickReservationsRepository } from '@services/quick-reservations/quick-reservations.repository.interface';
 import {
   CreateQuickReservationInput,
   FindQuickReservationsFilter,

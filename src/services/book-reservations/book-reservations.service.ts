@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BookReservationNotFound } from '@controllers/errors/controllers.errors';
-import { IBookReservationsRepository } from '@infrastructure/adapters/book-reservations/book-reservations.repository.interface';
+import { IBookReservationsRepository } from './book-reservations.repository.interface';
 import {
   BookReservationRecord,
   CreateBookReservationInput,

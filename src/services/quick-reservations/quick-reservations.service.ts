@@ -1,5 +1,5 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { IQuickReservationsRepository } from '@infrastructure/adapters/quick-reservations/quick-reservations.repository.interface';
+import { IQuickReservationsRepository } from './quick-reservations.repository.interface';
 import {
   CreateQuickReservationInput,
   FindQuickReservationsFilter,
